@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero / Search Card -->
+    <div class="card shadow-sm border-0 mb-4 p-4" style="background: linear-gradient(135deg, #d84e55 0%, #a8232a 100%); color: white; border-radius: 12px;">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">Book Bus Tickets Online Fast & Effortlessly</h2>
+            <p class="text-white-50">Compare operators, real-time seats, and instant boarding passes</p>
+        </div>
+
+        <form action="{{ url_for('index') }}" method="GET" class="bg-white p-3 rounded-3 text-dark shadow">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-muted small"><i class="bi bi-geo-alt-fill text-danger me-1"></i> FROM</label>
+                    <input list="from-list" name="source" class="form-control form-control-lg" placeholder="Source City" value="{{ selected_source }}" required>
+                    <datalist id="from-list">
+                        {% for s in sources %}
+                            <option value="{{ s }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-muted small"><i class="bi bi-pin-map-fill text-danger me-1"></i> TO</label>
+                    <input list="to-list" name="destination" class="form-control form-control-lg" placeholder="Destination City" value="{{ selected_destination }}" required>
+                    <datalist id="to-list">
+                        {% for d in destinations %}
+                            <option value="{{ d }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-muted small"><i class="bi bi-calendar-event text-danger me-1"></i> TRAVEL DATE</label>
+                    <input type="date" name="travel_date" class="form-control form-control-lg" value="{{ travel_date }}" required>
+                </div>
+                <div class="col-md-3 d-grid">
+                    <button type="submit" class="btn btn-brand btn-lg fw-bold">
+                        <i class="bi bi-search me-1"></i> Search Buses
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Search Results Section -->
+    {% if selected_source and selected_destination %}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold text-secondary">
+                Available Buses: <span class="text-dark">{{ selected_source }} &rarr; {{ selected_destination }}</span>
+            </h4>
+            <span class="badge bg-secondary p-2">{{ buses|length }} Buses Found</span>
+        </div>
+
+        {% if buses %}
+            <div class="row g-3">
+                {% for bus in buses %}
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0 border-start border-4 border-danger p-3">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <h5 class="fw-bold mb-1">{{ bus.operator_name }}</h5>
+                                    <span class="badge bg-light text-dark border">{{ bus.bus_type }}</span>
+                                    <div class="text-muted small mt-1"><i class="bi bi-truck me-1"></i>{{ bus.bus_number }}</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="h5 fw-bold mb-0">{{ bus.departure_time }}</div>
+                                            <small class="text-muted">{{ bus.source }}</small>
+                                        </div>
+                                        <div class="text-center px-2 text-muted">
+                                            <i class="bi bi-arrow-right fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <div class="h5 fw-bold mb-0">{{ bus.arrival_time }}</div>
+                                            <small class="text-muted">{{ bus.destination }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <div class="h4 fw-bold text-success mb-0">₹ {{ "%.2f"|format(bus.fare) }}</div>
+                                    <small class="{% if bus.available_seats > 5 %}text-muted{% else %}text-danger fw-bold{% endif %}">
+                                        {{ bus.available_seats }} Seats Left
+                                    </small>
+                                </div>
+                                <div class="col-md-3 text-end">
+                                    {% if bus.available_seats > 0 %}
+                                        <a href="{{ url_for('select_seats', bus_id=bus.id, travel_date=travel_date) }}" class="btn btn-brand fw-semibold px-4">
+                                            Select Seats
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-secondary disabled px-4" disabled>Sold Out</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card p-5 text-center shadow-sm border-0">
+                <i class="bi bi-emoji-frown text-muted display-4 mb-3"></i>
+                <h5>No buses running on this route on the selected date.</h5>
+                <p class="text-muted">Try searching another popular route like <strong>Pune &rarr; Bengaluru</strong> or <strong>Mumbai &rarr; Goa</strong>.</p>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
