@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <!-- Seat Map Layout -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-0">{{ bus.operator_name }}</h5>
+                        <small class="text-muted">{{ bus.source }} &rarr; {{ bus.destination }} | Date: {{ travel_date }}</small>
+                    </div>
+                    <span class="badge bg-danger">{{ bus.bus_type }}</span>
+                </div>
+                
+                <div class="card-body p-4 text-center">
+                    <!-- Seat Legends -->
+                    <div class="d-flex justify-content-center gap-4 mb-4 small">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="seat available border" style="width:24px;height:24px;margin:0;"></div> Available
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="seat selected" style="width:24px;height:24px;margin:0;"></div> Selected
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="seat occupied" style="width:24px;height:24px;margin:0;"></div> Booked
+                        </div>
+                    </div>
+
+                    <!-- Bus Cabin Layout -->
+                    <div class="d-inline-block border p-4 rounded-4 bg-light shadow-sm">
+                        <!-- Driver Section -->
+                        <div class="d-flex justify-content-end mb-3 border-bottom pb-2">
+                            <span class="badge bg-secondary p-2"><i class="bi bi-steering-wheel"></i> Driver</span>
+                        </div>
+
+                        <!-- 2x2 Seat Matrix for 32 seats -->
+                        {% for row in range(1, 9) %}
+                            <div class="d-flex align-items-center justify-content-center">
+                                <!-- Left pair -->
+                                {% set seat_a = "L" ~ row ~ "A" %}
+                                {% set seat_b = "L" ~ row ~ "B" %}
+                                <div class="seat {% if seat_a in occupied_seats %}occupied{% else %}available{% endif %}" data-seat="{{ seat_a }}">{{ seat_a }}</div>
+                                <div class="seat {% if seat_b in occupied_seats %}occupied{% else %}available{% endif %}" data-seat="{{ seat_b }}">{{ seat_b }}</div>
+                                
+                                <!-- Center Aisle -->
+                                <div class="seat-aisle"></div>
+
+                                <!-- Right pair -->
+                                {% set seat_c = "R" ~ row ~ "A" %}
+                                {% set seat_d = "R" ~ row ~ "B" %}
+                                <div class="seat {% if seat_c in occupied_seats %}occupied{% else %}available{% endif %}" data-seat="{{ seat_c }}">{{ seat_c }}</div>
+                                <div class="seat {% if seat_d in occupied_seats %}occupied{% else %}available{% endif %}" data-seat="{{ seat_d }}">{{ seat_d }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Sidebar -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0">Fare & Seat Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted small">Selected Seats:</label>
+                        <div id="selected-seats-display" class="fw-bold text-primary fs-5">None</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small">Base Fare per seat:</label>
+                        <div class="fw-semibold">₹ {{ "%.2f"|format(bus.fare) }}</div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="h5 fw-bold mb-0">Total Amount:</span>
+                        <span id="total-price-display" class="h4 fw-bold text-success mb-0">₹ 0.00</span>
+                    </div>
+
+                    <form action="{{ url_for('confirm_booking') }}" method="POST" id="checkout-form">
+                        <input type="hidden" name="bus_id" value="{{ bus.id }}">
+                        <input type="hidden" name="travel_date" value="{{ travel_date }}">
+                        <input type="hidden" name="selected_seats" id="selected_seats_input" value="">
+                        <button type="submit" id="proceed-btn" class="btn btn-brand w-100 py-2 fw-bold" disabled>
+                            Proceed to Passenger Details
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const farePerSeat = {{ bus.fare }};
+    const selectedSeats = new Set();
+
+    const seatElements = document.querySelectorAll('.seat.available');
+    const selectedDisplay = document.getElementById('selected-seats-display');
+    const totalDisplay = document.getElementById('total-price-display');
+    const hiddenInput = document.getElementById('selected_seats_input');
+    const proceedBtn = document.getElementById('proceed-btn');
+
+    seatElements.forEach(seat => {
+        seat.addEventListener('click', () => {
+            const seatNumber = seat.getAttribute('data-seat');
+            
+            if (selectedSeats.has(seatNumber)) {
+                selectedSeats.delete(seatNumber);
+                seat.classList.remove('selected');
+            } else {
+                selectedSeats.add(seatNumber);
+                seat.classList.add('selected');
+            }
+
+            // Update UI State
+            if (selectedSeats.size > 0) {
+                const seatsArr = Array.from(selectedSeats);
+                selectedDisplay.innerText = seatsArr.join(', ');
+                totalDisplay.innerText = '₹ ' + (seatsArr.length * farePerSeat).toFixed(2);
+                hiddenInput.value = seatsArr.join(',');
+                proceedBtn.disabled = false;
+            } else {
+                selectedDisplay.innerText = 'None';
+                totalDisplay.innerText = '₹ 0.00';
+                hiddenInput.value = '';
+                proceedBtn.disabled = true;
+            }
+        });
+    });
+</script>
+{% endblock %}
