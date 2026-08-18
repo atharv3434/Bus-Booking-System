@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h4 class="fw-bold mb-0"><i class="bi bi-person-lines-fill text-danger me-2"></i>Passenger Information</h4>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Trip Overview -->
+                    <div class="bg-light p-3 rounded-3 mb-4">
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">Operator & Bus</small>
+                                <div class="fw-bold">{{ bus.operator_name }} ({{ bus.bus_type }})</div>
+                                <div class="small text-muted">{{ bus.source }} &rarr; {{ bus.destination }}</div>
+                            </div>
+                            <div class="col-6 text-end">
+                                <small class="text-muted">Seats Booked</small>
+                                <div class="fw-bold text-primary">{{ selected_seats|join(', ') }} ({{ selected_seats|length }} Seat{% if selected_seats|length > 1 %}s{% endif %})</div>
+                                <div class="h5 fw-bold text-success mt-1">₹ {{ "%.2f"|format(total_fare) }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form action="{{ url_for('process_payment') }}" method="POST">
+                        <input type="hidden" name="bus_id" value="{{ bus.id }}">
+                        <input type="hidden" name="travel_date" value="{{ travel_date }}">
+                        <input type="hidden" name="selected_seats" value="{{ selected_seats|join(',') }}">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Full Name</label>
+                            <input type="text" name="passenger_name" class="form-control form-control-lg" placeholder="e.g. John Doe" required>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email Address</label>
+                                <input type="email" name="passenger_email" class="form-control form-control-lg" placeholder="name@example.com" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Phone Number</label>
+                                <input type="tel" name="passenger_phone" class="form-control form-control-lg" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
+                            </div>
+                        </div>
+
+                        <!-- Mock Payment Method Box -->
+                        <div class="border rounded-3 p-3 mb-4 bg-white">
+                            <label class="form-label fw-semibold mb-2"><i class="bi bi-credit-card-2-front text-danger me-1"></i> Payment Mode</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_mode" id="pay1" checked>
+                                <label class="form-check-label" for="pay1">
+                                    Instant Payment Gateway (UPI / Credit / Debit / NetBanking)
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-brand btn-lg w-100 fw-bold">
+                            Pay ₹ {{ "%.2f"|format(total_fare) }} & Confirm Booking
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
