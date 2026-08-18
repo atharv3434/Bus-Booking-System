@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center mb-3 d-print-none">
+                <span class="badge bg-success p-2 mb-2"><i class="bi bi-check-circle-fill me-1"></i> Booking Confirmed</span>
+                <h3 class="fw-bold">Your Electronic Ticket is Ready!</h3>
+            </div>
+
+            <!-- Boarding Pass / Ticket Card -->
+            <div class="card shadow border-0 rounded-4 overflow-hidden mb-4 bg-white" id="printable-ticket">
+                <div class="p-4" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="fw-bold mb-0"><i class="bi bi-bus-front me-2"></i>{{ booking.operator_name }}</h4>
+                            <small class="text-white-50">{{ booking.bus_type }} | Bus No: {{ booking.bus_number }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-warning text-dark fs-6">PNR: {{ booking.pnr }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-3">
+                            <small class="text-muted d-block">Source</small>
+                            <span class="h6 fw-bold">{{ booking.source }}</span>
+                            <div class="text-muted small">Dep: {{ booking.departure_time }}</div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <small class="text-muted d-block">Destination</small>
+                            <span class="h6 fw-bold">{{ booking.destination }}</span>
+                            <div class="text-muted small">Arr: {{ booking.arrival_time }}</div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <small class="text-muted d-block">Travel Date</small>
+                            <span class="h6 fw-bold">{{ booking.travel_date }}</span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <small class="text-muted d-block">Allocated Seats</small>
+                            <span class="h6 fw-bold text-danger">{{ booking.seats_booked }}</span>
+                        </div>
+                    </div>
+
+                    <hr class="border-secondary-subtle">
+
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Passenger Name</small>
+                            <div class="fw-bold">{{ booking.passenger_name }}</div>
+                            <small class="text-muted">{{ booking.passenger_email }} | {{ booking.passenger_phone }}</small>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <small class="text-muted d-block">Total Fare Paid</small>
+                            <div class="h4 fw-bold text-success mb-0">₹ {{ "%.2f"|format(booking.total_fare) }}</div>
+                            <small class="text-muted">Booked on: {{ booking.booking_timestamp }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light p-3 text-center border-top">
+                    <small class="text-muted">Please carry a valid Govt ID along with this e-ticket during boarding.</small>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-center gap-3 d-print-none">
+                <button onclick="window.print()" class="btn btn-outline-dark px-4 fw-semibold">
+                    <i class="bi bi-printer me-1"></i> Print Boarding Pass
+                </button>
+                <a href="{{ url_for('index') }}" class="btn btn-brand px-4 fw-semibold">
+                    <i class="bi bi-house me-1"></i> Book Another Ticket
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
