@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-3"><i class="bi bi-search me-2 text-danger"></i>Find My Ticket</h4>
+                    <form action="{{ url_for('my_bookings') }}" method="POST">
+                        <div class="input-group input-group-lg">
+                            <input type="text" name="search_query" class="form-control" placeholder="Enter PNR, Email, or Mobile No" value="{{ search_query }}" required>
+                            <button class="btn btn-brand fw-bold px-4" type="submit">Search</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            {% if bookings %}
+                <h5 class="fw-bold mb-3">Found Bookings</h5>
+                {% for b in bookings %}
+                    <div class="card shadow-sm border-0 mb-3">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-warning text-dark mb-1">PNR: {{ b.pnr }}</span>
+                                <h5 class="fw-bold mb-0">{{ b.operator_name }} ({{ b.source }} &rarr; {{ b.destination }})</h5>
+                                <div class="text-muted small">Date: {{ b.travel_date }} | Seats: <span class="fw-bold text-danger">{{ b.seats_booked }}</span></div>
+                            </div>
+                            <div class="text-end">
+                                <div class="h5 fw-bold text-success mb-1">₹ {{ "%.2f"|format(b.total_fare) }}</div>
+                                <a href="{{ url_for('ticket', pnr=b.pnr) }}" class="btn btn-sm btn-outline-dark">View E-Ticket</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
